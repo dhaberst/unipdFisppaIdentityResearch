@@ -4,6 +4,8 @@
 
 ### Ollama
 
+Ollama (https://ollama.com/) is a service that allows the download and running of local models. In this case we will utilize a python library.
+
 1. Install Ollama with Homebrew:
 
 `brew install ollama`
@@ -12,9 +14,11 @@
 
 `brew services start ollama`
 
-3. Download the model (will download to ~/.ollama/models)
+3. Download the models (will download to ~/.ollama/models)
 
 `ollama pull gemma4:12b`
+`ollama pull llama3.1:8b`
+`ollama pull phi4-mini`
 
 4. Finally install python libraries
 
@@ -24,4 +28,4 @@
 
 To run, use the following command:
 
-`setup.py`
+`python3 main.py`
