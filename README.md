@@ -52,4 +52,3 @@ We will utilize SQLite3 as a database to store article data / classifications
 | `llamaClassification` | `INTEGER` | Llama classification result: 0, 1, or 2 |
 | `phiClassification` | `INTEGER` | Phi classification result: 0, 1, or 2 |
 | `version` | `INTEGER` | Version number experiment |
-

@@ -10,7 +10,12 @@ DATABASE_PATH = ROOT / "articles.db"
 MODELS = {
     "gemma": "gemma4:12b",
     "llama": "llama3.1:8b",
-    "phi": "phi4",
+    "phi": "phi4-mini",
+}
+CLASSIFICATION_COLUMNS = {
+    "gemma": "gemmaClassification",
+    "llama": "llamaClassification",
+    "phi": "phiClassification",
 }
 
 PROMPT_VERSION_1 = """
@@ -36,7 +41,9 @@ def main():
     with sqlite3.connect(DATABASE_PATH) as con:
         populate_database(con.cursor())
 
-        run_gemma_classification(con)
+        run_classification(con, "phi")
+        run_classification(con, "gemma")
+        run_classification(con, "llama")
 
 def populate_database(cur):
     table_exists = cur.execute(
@@ -125,21 +132,26 @@ def populate_database(cur):
 
         print(f"Finished {path.name}: imported {imported}, skipped {skipped} existing")
 
-def run_gemma_classification(con):
+def run_classification(con, model_name):
+    if model_name not in MODELS:
+        raise ValueError(f"Unknown model: {model_name}")
+
+    model = MODELS[model_name]
+    classification_column = CLASSIFICATION_COLUMNS[model_name]
     articles = con.execute(
-        """
+        f"""
         SELECT Id, identifier, title, fullText
         FROM Article
-        WHERE gemmaClassification IS NULL
+        WHERE {classification_column} IS NULL
         ORDER BY Id
         """
     ).fetchall()
 
     if not articles:
-        print("No articles need Gemma classification")
+        print(f"No articles need {model_name} classification")
         return
 
-    print(f"Starting Gemma classification for {len(articles)} articles")
+    print(f"Starting {model_name} classification for {len(articles)} articles")
 
     for number, (article_id, identifier, title, full_text) in enumerate(articles, start=1):
         print(f"Classifying article {number}/{len(articles)}: {title or identifier}")
@@ -150,7 +162,7 @@ def run_gemma_classification(con):
         prompt = PROMPT_VERSION_1.format(title=title, article_text=full_text)
 
         response = ollama.chat(
-            model=MODELS["gemma"],
+            model=model,
             messages=[{"role": "user", "content": prompt}],
             options={"num_ctx": 16384, "temperature": 0},
         )
@@ -164,21 +176,15 @@ def run_gemma_classification(con):
             )
 
         con.execute(
-            "UPDATE Article SET gemmaClassification = ? WHERE Id = ?",
+            f"UPDATE Article SET {classification_column} = ? WHERE Id = ?",
             (int(result), article_id),
         )
         con.commit()
         print(f"Saved classification for {identifier}: {result}")
 
-    print("Unloading Gemma")
-    ollama.generate(model=MODELS["gemma"], keep_alive=0)
-    print("Gemma classification complete")
-
-def run_llama():
-    pass
-
-def run_phi():
-    pass
+    print(f"Unloading {model_name}")
+    ollama.generate(model=model, keep_alive=0)
+    print(f"{model_name} classification complete")
 
 if __name__ == "__main__":
     main()
