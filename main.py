@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parent
 ARTICLES_FOLDER = ROOT / "articles"
 DATABASE_PATH = ROOT / "articles.db"
 MODELS = {
-    "gemma": "gemma4:12b",
+    "gemma": "gemma4:e4b",
     "llama": "llama3.1:8b",
     "phi": "phi4-mini",
 }
