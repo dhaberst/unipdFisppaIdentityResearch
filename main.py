@@ -18,11 +18,33 @@ CLASSIFICATION_COLUMNS = {
     "phi": "phiClassification",
 }
 
+CURRENT_VERSION = 1
+
 PROMPT_VERSION_1 = """
     Role:
     You are an expert in classifying news articles. Your task is to determine whether an article discusses human identity and, specifically, whether that identity is linked to a part of the body (e.g. brain, DNA, genes, blood, heart, the body as a whole or, at most, digital identity). Use one of the following labels: 1 for Relevant, 0 for Not Relevant or 2 Ambiguous. Ambiguous should not be a catch-all, only when the article discusses human identity, but the reference to a part of the body is only partial or not clearly defined.
 
     Label descriptions:
+    Relevant: the article discusses human identity and makes a clear reference to a part of the body in describing that identity.
+    Not Relevant: the article does not discuss human identity.
+    Ambiguous: the article discusses human identity, but the reference to a part of the body is only partial or not clearly defined.
+
+    Response Requirement:
+    Output only a single integer: 1 for Relevant, 0 for Not Relevant, 2 Ambiguous. Do not include any other numbers, symbols, or characters.
+
+    Article to classify:
+    Title: {title}
+
+    Text:
+    {article_text}
+"""
+
+PROMPT_VERSION_2 = """
+    Role:
+    You are an expert in classifying news articles. Your task is to determine whether the article is about human identity and, specifically, whether it refers to a part of the body (for example, the brain, DNA, genes, blood, the heart, or the body as a whole). The article may discuss identity in general terms or by examining specific characteristics, such as a personality trait, an attitude, or a pattern of behavior.
+
+    Label descriptions:
+    Use one of the following labels: Relevant, Not Relevant or Ambiguous, where:
     Relevant: the article discusses human identity and makes a clear reference to a part of the body in describing that identity.
     Not Relevant: the article does not discuss human identity.
     Ambiguous: the article discusses human identity, but the reference to a part of the body is only partial or not clearly defined.
@@ -50,26 +72,29 @@ def populate_database(cur):
         "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'Article'"
     ).fetchone()
 
-    if table_exists:
-        return
+    if not table_exists:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS Article (
+                Id INTEGER PRIMARY KEY,
+                identifier TEXT NOT NULL,
+                title TEXT,
+                url TEXT,
+                date TEXT,
+                fullText TEXT,
+                source TEXT,
+                bodyPart TEXT,
+                gemmaClassification INTEGER CHECK (gemmaClassification IN (0, 1, 2)),
+                llamaClassification INTEGER CHECK (llamaClassification IN (0, 1, 2)),
+                phiClassification INTEGER CHECK (phiClassification IN (0, 1, 2)),
+                version INTEGER NOT NULL DEFAULT 1,
+                UNIQUE (identifier, version)
+            );
+        """)
 
+    if CURRENT_VERSION == 1:
+        return
+    
     print(f"Populating database from {ARTICLES_FOLDER}")
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS Article (
-            Id INTEGER PRIMARY KEY,
-            identifier TEXT NOT NULL UNIQUE,
-            title TEXT,
-            url TEXT,
-            date TEXT,
-            fullText TEXT,
-            source TEXT,
-            bodyPart TEXT,
-            gemmaClassification INTEGER CHECK (gemmaClassification IN (0, 1, 2)),
-            llamaClassification INTEGER CHECK (llamaClassification IN (0, 1, 2)),
-            phiClassification INTEGER CHECK (phiClassification IN (0, 1, 2)),
-            version INTEGER NOT NULL DEFAULT 1
-        );
-    """)
 
     required_columns = {"Fulltext", "Identifier", "Date", "Source Set", "Title", "URL"}
     insert_article = """
@@ -103,8 +128,8 @@ def populate_database(cur):
                     raise ValueError(f"{path} contains a row without an Identifier")
 
                 exists = cur.execute(
-                    "SELECT 1 FROM Article WHERE identifier = ?",
-                    (identifier,),
+                    "SELECT 1 FROM Article WHERE identifier = ? AND version = ?",
+                    (identifier, CURRENT_VERSION),
                 ).fetchone()
 
                 if exists:
@@ -125,6 +150,7 @@ def populate_database(cur):
                         row["Fulltext"],
                         row["Source Set"],
                         path.stem,
+                        CURRENT_VERSION
                     ),
                 )
 

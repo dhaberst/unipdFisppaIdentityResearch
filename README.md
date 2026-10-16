@@ -84,4 +84,4 @@ We will utilize SQLite3 as a database to store article data / classifications
 | `gemmaClassification` | `INTEGER` | Gemma classification result: 0, 1, or 2 |
 | `llamaClassification` | `INTEGER` | Llama classification result: 0, 1, or 2 |
 | `phiClassification` | `INTEGER` | Phi classification result: 0, 1, or 2 |
-| `version` | `INTEGER` | Version number experiment |
+| `version` | `INTEGER` | Version number experiment; unique together with `identifier` |
