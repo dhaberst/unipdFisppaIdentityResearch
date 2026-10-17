@@ -39,7 +39,7 @@ def plot_model_classification_counts(cur):
     fig, ax = plt.subplots()
     ax.bar(queries.keys(), counts)
     ax.set_ylabel("Article count")
-    ax.set_title("Article counts by classification")
+    ax.set_title("Article counts by classification (Version 1)")
     ax.tick_params(axis="x", labelrotation=30)
     fig.tight_layout()
     plt.show()
@@ -68,7 +68,7 @@ def plot_model_classification_performance(cur):
             [counts_by_model[model][category_index] for model in model_names],
         )
         ax.set_ylabel("Article count")
-        ax.set_title(f"Model counts for classification {category}")
+        ax.set_title(f"Model counts for classification {category} (Version 1)")
         fig.tight_layout()
 
     plt.show()
