@@ -98,3 +98,15 @@ QUERY_ALL_ZERO_SQL = """
       AND phiClassification = 0
       AND version = 1
 """
+
+QUERY_MODEL_CLASSIFICATION_COUNTS_SQL = """
+    SELECT
+        COUNT(CASE WHEN {classification_column} = 1 THEN 1 END),
+        COUNT(CASE WHEN {classification_column} IN (1, 2) THEN 1 END),
+        COUNT(CASE WHEN {classification_column} = 0 THEN 1 END)
+    FROM Article
+    WHERE gemmaClassification IS NOT NULL
+        AND llamaClassification IS NOT NULL
+        AND phiClassification IS NOT NULL
+        AND version = 1
+"""
