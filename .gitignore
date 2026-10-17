@@ -219,6 +219,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# VScode
+.vscode
+
 # Project specific
 articles/
 articles*.db
