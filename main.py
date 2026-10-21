@@ -78,7 +78,7 @@ def populate_database(cur):
 
     if CURRENT_VERSION == 1:
         return
-    
+
     print(f"Populating database from {ARTICLES_FOLDER}")
 
     required_columns = {"Fulltext", "Identifier", "Date", "Source Set", "Title", "URL"}
@@ -96,7 +96,9 @@ def populate_database(cur):
 
     for path in csv_files:
         imported = 0
-        skipped = 0
+        skipped_identifier = 0
+        skipped_source = 0
+        skipped_title = 0
 
         print(f"Reading {path.name}")
         with path.open(encoding="utf-8-sig", newline="") as csv_file:
@@ -112,28 +114,59 @@ def populate_database(cur):
                 if not identifier:
                     raise ValueError(f"{path} contains a row without an Identifier")
 
-                exists = cur.execute(
-                    "SELECT 1 FROM Article WHERE identifier = ? AND version = ?",
+                source = row["Source Set"]
+                if source and source.strip().upper() == "TIMESOFINDIA":
+                    skipped_source += 1
+                    continue
+
+                title = row["Title"]
+                existing_identifier = cur.execute(
+                    "SELECT title FROM Article WHERE identifier = ? AND version = ?",
                     (identifier, CURRENT_VERSION),
                 ).fetchone()
 
-                if exists:
-                    skipped += 1
-                    print(
-                        f"Skipped {identifier} from {path.name}: "
-                        "identifier already exists in Article"
-                    )
+                if existing_identifier and existing_identifier[0] != title:
+                    skipped_identifier += 1
                     continue
+
+                if title:
+                    existing_title = cur.execute(
+                        """
+                        SELECT COUNT(*), MAX(julianday(date))
+                        FROM Article
+                        WHERE title = ? AND version = ?
+                        """,
+                        (title, CURRENT_VERSION),
+                    ).fetchone()
+
+                    if existing_title[0]:
+                        incoming_date = cur.execute(
+                            "SELECT julianday(?)",
+                            (row["Date"],),
+                        ).fetchone()[0]
+                        newest_existing_date = existing_title[1]
+
+                        if incoming_date is None or (
+                            newest_existing_date is not None
+                            and incoming_date <= newest_existing_date
+                        ):
+                            skipped_title += 1
+                            continue
+
+                        cur.execute(
+                            "DELETE FROM Article WHERE title = ? AND version = ?",
+                            (title, CURRENT_VERSION),
+                        )
 
                 cur.execute(
                     insert_article,
                     (
                         identifier,
-                        row["Title"],
+                        title,
                         row["URL"],
                         row["Date"],
                         row["Fulltext"],
-                        row["Source Set"],
+                        source,
                         path.stem,
                         CURRENT_VERSION
                     ),
@@ -141,7 +174,12 @@ def populate_database(cur):
 
                 imported += 1
 
-        print(f"Finished {path.name}: imported {imported}, skipped {skipped} existing")
+        print(
+            f"Finished {path.name}: imported {imported}, "
+            f"skipped {skipped_source} TIMESOFINDIA, "
+            f"{skipped_title} duplicate titles, "
+            f"{skipped_identifier} existing identifiers"
+        )
 
 def run_classification(con, model_name):
     if model_name not in MODELS:
