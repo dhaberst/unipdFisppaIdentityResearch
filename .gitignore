@@ -223,5 +223,7 @@ __marimo__/
 .vscode
 
 # Project specific
+.DS_STORE
 articles/
 articles*.db
+export*.csv
