@@ -20,7 +20,7 @@ def sample_all_classifications_equal_1():
               AND llamaClassification = 1
               AND phiClassification = 1
             ORDER BY RANDOM()
-            LIMIT 20
+            LIMIT 30
             """
         )
 
