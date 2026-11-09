@@ -49,6 +49,7 @@ def sample_all_classifications_equal_1_or_2():
                 AND phiClassification IN (1, 2)
                 {exclude_clause}
                 AND version = 1
+            ORDER BY RANDOM()
             """,
             tuple(EXCLUDE_LIST),
         )
