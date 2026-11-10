@@ -38,14 +38,13 @@ QUERY_AT_MOST_TWO_AGREEMENT_SQL = """
     SELECT *
     FROM Article
     WHERE gemmaClassification IS NOT NULL
-      AND llamaClassification IS NOT NULL
-      AND phiClassification IS NOT NULL
-      AND (
-          (CASE WHEN gemmaClassification = 1 THEN 1 ELSE 0 END) +
-          (CASE WHEN llamaClassification = 1 THEN 1 ELSE 0 END) +
-          (CASE WHEN phiClassification = 1 THEN 1 ELSE 0 END)
-      ) <= 2
-      AND version = 1
+        AND llamaClassification IS NOT NULL
+        AND phiClassification IS NOT NULL
+        AND gemmaClassification IN (0, 1)
+        AND llamaClassification IN (0, 1)
+        AND phiClassification IN (0, 1)
+        AND gemmaClassification + llamaClassification + phiClassification = 2
+        AND version = 1
 """
 
 QUERY_AT_MOST_TWO_OR_AMBIGUOUS_SQL = """
@@ -54,11 +53,14 @@ QUERY_AT_MOST_TWO_OR_AMBIGUOUS_SQL = """
     WHERE gemmaClassification IS NOT NULL
       AND llamaClassification IS NOT NULL
       AND phiClassification IS NOT NULL
+      AND gemmaClassification IN (0, 1, 2)
+      AND llamaClassification IN (0, 1, 2)
+      AND phiClassification IN (0, 1, 2)
       AND (
           (CASE WHEN gemmaClassification IN (1, 2) THEN 1 ELSE 0 END) +
           (CASE WHEN llamaClassification IN (1, 2) THEN 1 ELSE 0 END) +
           (CASE WHEN phiClassification IN (1, 2) THEN 1 ELSE 0 END)
-      ) <= 2
+      ) = 2
       AND version = 1
 """
 
@@ -68,11 +70,14 @@ QUERY_AT_MOST_ONE_AGREEMENT_SQL = """
     WHERE gemmaClassification IS NOT NULL
       AND llamaClassification IS NOT NULL
       AND phiClassification IS NOT NULL
+      AND gemmaClassification IN (0, 1)
+      AND llamaClassification IN (0, 1)
+      AND phiClassification IN (0, 1)
       AND (
           (CASE WHEN gemmaClassification = 1 THEN 1 ELSE 0 END) +
           (CASE WHEN llamaClassification = 1 THEN 1 ELSE 0 END) +
           (CASE WHEN phiClassification = 1 THEN 1 ELSE 0 END)
-      ) <= 1
+      ) = 1
       AND version = 1
 """
 
@@ -82,11 +87,14 @@ QUERY_AT_MOST_ONE_OR_AMBIGUOUS_SQL = """
     WHERE gemmaClassification IS NOT NULL
       AND llamaClassification IS NOT NULL
       AND phiClassification IS NOT NULL
+      AND gemmaClassification IN (0, 1, 2)
+      AND llamaClassification IN (0, 1, 2)
+      AND phiClassification IN (0, 1, 2)
       AND (
           (CASE WHEN gemmaClassification IN (1, 2) THEN 1 ELSE 0 END) +
           (CASE WHEN llamaClassification IN (1, 2) THEN 1 ELSE 0 END) +
           (CASE WHEN phiClassification IN (1, 2) THEN 1 ELSE 0 END)
-      ) <= 1
+      ) = 1
       AND version = 1
 """
 
