@@ -225,5 +225,5 @@ __marimo__/
 # Project specific
 .DS_STORE
 articles/
-articles*.db
+articles_*.db
 export*.csv
