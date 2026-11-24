@@ -77,7 +77,7 @@ def populate_database(cur):
     if not table_exists:
         cur.execute(CREATE_TABLE_SQL)
 
-    if CURRENT_IMPORT_VERSION == 1:
+    if CURRENT_IMPORT_VERSION == 1 or CURRENT_IMPORT_VERSION == 2:
         return
 
     print(f"Populating database from {ARTICLES_FOLDER}")
