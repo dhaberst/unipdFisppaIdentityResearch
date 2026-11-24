@@ -135,9 +135,9 @@ def populate_database(cur):
                         """
                         SELECT COUNT(*), MAX(julianday(date))
                         FROM Article
-                        WHERE title = ? AND version = ? AND importVersion = ?
+                        WHERE title = ? AND version = ?
                         """,
-                        (title, CURRENT_VERSION, CURRENT_IMPORT_VERSION),
+                        (title, CURRENT_VERSION),
                     ).fetchone()
 
                     if existing_title[0]:
