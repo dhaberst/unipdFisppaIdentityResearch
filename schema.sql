@@ -11,5 +11,6 @@ CREATE TABLE IF NOT EXISTS Article (
     llamaClassification INTEGER CHECK (llamaClassification IN (0, 1, 2)),
     phiClassification INTEGER CHECK (phiClassification IN (0, 1, 2)),
     version INTEGER NOT NULL DEFAULT 1,
+    importVersion INTEGER,
     UNIQUE (identifier, version)
 );

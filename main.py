@@ -20,6 +20,7 @@ CLASSIFICATION_COLUMNS = {
 }
 
 CURRENT_VERSION = 1
+CURRENT_IMPORT_VERSION = 2
 
 PROMPT_VERSION_1 = """
     Role:
@@ -76,7 +77,7 @@ def populate_database(cur):
     if not table_exists:
         cur.execute(CREATE_TABLE_SQL)
 
-    if CURRENT_VERSION == 1:
+    if CURRENT_IMPORT_VERSION == 1:
         return
 
     print(f"Populating database from {ARTICLES_FOLDER}")
@@ -84,9 +85,9 @@ def populate_database(cur):
     required_columns = {"Fulltext", "Identifier", "Date", "Source Set", "Title", "URL"}
     insert_article = """
         INSERT INTO Article (
-            identifier, title, url, date, fullText, source, bodyPart, version
+            identifier, title, url, date, fullText, source, bodyPart, version, importVersion
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     csv_files = sorted(ARTICLES_FOLDER.glob("*.csv"))
@@ -125,7 +126,7 @@ def populate_database(cur):
                     (identifier, CURRENT_VERSION),
                 ).fetchone()
 
-                if existing_identifier and existing_identifier[0] != title:
+                if existing_identifier:
                     skipped_identifier += 1
                     continue
 
@@ -134,9 +135,9 @@ def populate_database(cur):
                         """
                         SELECT COUNT(*), MAX(julianday(date))
                         FROM Article
-                        WHERE title = ? AND version = ?
+                        WHERE title = ? AND version = ? AND importVersion = ?
                         """,
-                        (title, CURRENT_VERSION),
+                        (title, CURRENT_VERSION, CURRENT_IMPORT_VERSION),
                     ).fetchone()
 
                     if existing_title[0]:
@@ -168,7 +169,8 @@ def populate_database(cur):
                         row["Fulltext"],
                         source,
                         path.stem,
-                        CURRENT_VERSION
+                        CURRENT_VERSION,
+                        CURRENT_IMPORT_VERSION
                     ),
                 )
 
