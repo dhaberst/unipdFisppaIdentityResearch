@@ -23,6 +23,7 @@ QUERY_ALL_AGREEMENT_SQL = """
       AND llamaClassification = 1
       AND phiClassification = 1
       AND version = 1
+      AND importVersion = 2
 """
 
 QUERY_ALL_OR_AMBIGUOUS_SQL = """
@@ -32,6 +33,7 @@ QUERY_ALL_OR_AMBIGUOUS_SQL = """
       AND llamaClassification IN (1, 2)
       AND phiClassification IN (1, 2)
       AND version = 1
+      AND importVersion = 2
 """
 
 QUERY_AT_MOST_TWO_AGREEMENT_SQL = """
@@ -45,6 +47,7 @@ QUERY_AT_MOST_TWO_AGREEMENT_SQL = """
         AND phiClassification IN (0, 1)
         AND gemmaClassification + llamaClassification + phiClassification = 2
         AND version = 1
+        AND importVersion = 2
 """
 
 QUERY_AT_MOST_TWO_OR_AMBIGUOUS_SQL = """
@@ -62,6 +65,7 @@ QUERY_AT_MOST_TWO_OR_AMBIGUOUS_SQL = """
           (CASE WHEN phiClassification IN (1, 2) THEN 1 ELSE 0 END)
       ) = 2
       AND version = 1
+      AND importVersion = 2
 """
 
 QUERY_AT_MOST_ONE_AGREEMENT_SQL = """
@@ -79,6 +83,7 @@ QUERY_AT_MOST_ONE_AGREEMENT_SQL = """
           (CASE WHEN phiClassification = 1 THEN 1 ELSE 0 END)
       ) = 1
       AND version = 1
+      AND importVersion = 2
 """
 
 QUERY_AT_MOST_ONE_OR_AMBIGUOUS_SQL = """
@@ -96,6 +101,7 @@ QUERY_AT_MOST_ONE_OR_AMBIGUOUS_SQL = """
           (CASE WHEN phiClassification IN (1, 2) THEN 1 ELSE 0 END)
       ) = 1
       AND version = 1
+      AND importVersion = 2
 """
 
 QUERY_ALL_ZERO_SQL = """
@@ -105,6 +111,7 @@ QUERY_ALL_ZERO_SQL = """
       AND llamaClassification = 0
       AND phiClassification = 0
       AND version = 1
+      AND importVersion = 2
 """
 
 QUERY_MODEL_CLASSIFICATION_COUNTS_SQL = """
@@ -117,4 +124,5 @@ QUERY_MODEL_CLASSIFICATION_COUNTS_SQL = """
         AND llamaClassification IS NOT NULL
         AND phiClassification IS NOT NULL
         AND version = 1
+        AND importVersion = 2
 """
